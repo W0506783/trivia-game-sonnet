@@ -1,3 +1,4 @@
+// src/components/DifficultySelector.jsx
 function DifficultySelector({ difficulty, setDifficulty }) {
   const difficulties = ["Easy", "Medium", "Hard"]
 
@@ -14,6 +15,9 @@ function DifficultySelector({ difficulty, setDifficulty }) {
             {dif}
           </option>
         ))}
+        <option value="chad" style={{ color: '#ff4444' }}>
+          ☠ CHAD MODE
+        </option>
       </select>
     </div>
   )
