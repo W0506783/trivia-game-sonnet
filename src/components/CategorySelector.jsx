@@ -12,13 +12,10 @@ function CategorySelector({ category, setCategory }) {
 
   return (
     <div className="flex flex-col items-center gap-2">
-      <label className="text-gray-300 text-sm font-semibold uppercase tracking-wide">
-        Select Category
-      </label>
       <select
         value={category}
         onChange={(e) => setCategory(e.target.value)}
-        className="bg-gray-800 text-white border border-gray-600 rounded-lg py-2 px-4 focus:outline-none focus:border-blue-500"
+        className="bg-gray-800 text-white border border-neon-cyan rounded-lg py-2 px-4 focus:outline-none focus:border-blue-500 w-48"
       >
         <option value="">Any Category</option>
         {categories.map((cat) => (
