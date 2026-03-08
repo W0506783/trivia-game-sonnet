@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import AnswerButton from './AnswerButton'
 
 const decode = (str) => {
@@ -7,14 +7,12 @@ const decode = (str) => {
   return txt.value
 }
 function QuestionCard({ question, onAnswer }) {
-  const [answers, setAnswers] = useState([])
   const [selected, setSelected] = useState(null)
 
-  useEffect(() => {
+  const answers = useMemo(() => {
     const all = [...question.incorrect_answers, question.correct_answer]
-    const shuffled = all.sort(() => Math.random() - 0.5)
-    setAnswers(shuffled)
-    setSelected(null)
+    // eslint-disable-next-line
+    return all.sort(() => Math.random() - 0.5)
   }, [question])
 
   const handleAnswer = (answer) => {

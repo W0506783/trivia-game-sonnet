@@ -17,7 +17,17 @@ function App() {
   const [amount, setAmount] = useState('')
   const handleAnswer = (isCorrect) => {
     if (isCorrect) setScore(score + 1)
+    setAnswered(true)
   }
+  const handleNext = () => {
+    setAnswered(false)
+    if (currentIndex + 1 >= questions.length) {
+      setScreen('results')
+    } else {
+      setCurrentIndex(currentIndex + 1)
+    }
+  }
+  const [answered, setAnswered] = useState(false)
 
   const fetchQuestions = async () => {
     setLoading(true)
@@ -72,13 +82,47 @@ function App() {
             QUESTION {currentIndex + 1} OF {questions.length}
           </p>
           <QuestionCard
+            key={currentIndex}
             question={questions[currentIndex]}
             onAnswer={handleAnswer}
           />
+          {answered && (
+            <Button
+              label={currentIndex + 1 >= questions.length ? "FINISH" : "NEXT"}
+              color="cyan"
+              size="lg"
+              onClick={handleNext}
+            />
+          )}
         </div>
       )}
       {screen === 'results' && (
-        <h2 className="font-arcade text-neon-yellow text-xl">Results Screen Coming Soon</h2>
+        <div className="flex flex-col items-center gap-8 w-full max-w-2xl px-4">
+          <h2 className="font-arcade text-neon-cyan text-2xl text-center leading-loose animate-flicker"
+            style={{ textShadow: '0 0 10px #00ffff, 0 0 20px #00ffff' }}>
+            GAME OVER
+          </h2>
+          <div className="border-2 border-neon-cyan rounded-lg p-8 w-full text-center"
+            style={{ boxShadow: '0 0 20px rgba(0,255,255,0.1)' }}>
+            <p className="font-arcade text-neon-green text-sm mb-4 leading-loose">
+              YOU SCORED
+            </p>
+            <p className="font-arcade text-neon-yellow text-4xl mb-4"
+              style={{ textShadow: '0 0 10px #ffff00, 0 0 20px #ffff00' }}>
+              {score}/{questions.length}
+            </p>
+            <p className="font-arcade text-neon-pink text-sm"
+              style={{ textShadow: '0 0 10px #ff00ff' }}>
+              {Math.round((score / questions.length) * 100)}%
+            </p>
+          </div>
+          <Button
+            label="PLAY AGAIN"
+            color="green"
+            size="lg"
+            onClick={() => setScreen('welcome')}
+          />
+        </div>
       )}
     </div>
   )
