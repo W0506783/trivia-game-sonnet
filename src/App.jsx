@@ -9,6 +9,7 @@ import QuestionCard from './components/QuestionCard'
 import HighScoreTable from './components/HighScoreTable'
 import NameEntry from './components/NameEntry'
 import MuteButton from './components/MuteButton'
+import StarField from './components/StarField'
 import { useHighScores } from './hooks/useHighScores'
 import { useMusicPlayer } from './hooks/useMusicPlayer'
 
@@ -23,6 +24,7 @@ function App() {
   const [difficulty, setDifficulty] = useState('')
   const [amount, setAmount] = useState('')
   const [loading, setLoading] = useState(false)
+  const [loadError, setLoadError] = useState('')
 
   const { scores, addScore, clearScores, isHighScore } = useHighScores()
   const { isMuted, toggleMute, nudge, setTrack } = useMusicPlayer()
@@ -84,6 +86,16 @@ function App() {
     try {
       const response = await fetch(url)
       const data = await response.json()
+
+      if (!data.results || data.results.length === 0) {
+        setLoadError(data.response_code === 5
+          ? 'TOO MANY REQUESTS — WAIT A FEW SECONDS AND TRY AGAIN'
+          : 'NO QUESTIONS FOUND — TRY DIFFERENT SETTINGS')
+        setLoading(false)
+        return
+      }
+
+      setLoadError('')
       setQuestions(data.results)
       setCurrentIndex(0)
       setScore(0)
@@ -91,13 +103,14 @@ function App() {
       setScreen('playing')
     } catch (error) {
       console.error('Failed to fetch questions:', error)
+      setLoadError('SOMETHING WENT WRONG — PLEASE TRY AGAIN')
     } finally {
       setLoading(false)
     }
   }
 
   // ── Results helpers ────────────────────────────────────────────────────────
-  const currentPercent = questions.length > 0
+  const currentPercent = questions && questions.length > 0
     ? Math.round((score / questions.length) * 100)
     : 0
 
@@ -120,12 +133,15 @@ function App() {
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center gap-8 p-6">
 
+      {/* StarField runs on splash + welcome, pauses during gameplay */}
+      <StarField active={screen === 'splash' || screen === 'welcome'} />
+
       <MuteButton isMuted={isMuted} onToggle={handleMuteToggle} />
 
       {/* ── SPLASH ────────────────────────────────────────────────── */}
       {screen === 'splash' && (
         <div
-          className="flex flex-col items-center gap-12 cursor-pointer select-none"
+          className="relative z-10 flex flex-col items-center gap-12 cursor-pointer select-none"
           onClick={handleSplashClick}
         >
           <h1
@@ -151,7 +167,7 @@ function App() {
 
       {/* ── WELCOME ───────────────────────────────────────────────── */}
       {screen === 'welcome' && (
-        <>
+        <div className="relative z-10 flex flex-col items-center gap-8">
           <h1
             className="font-arcade text-neon-cyan text-3xl text-center leading-loose animate-flicker"
             style={{ textShadow: '0 0 10px #00ffff, 0 0 20px #00ffff' }}
@@ -176,6 +192,14 @@ function App() {
           </div>
 
           <div className="flex flex-col items-center gap-3">
+            {loadError && (
+              <p
+                className="font-arcade text-center leading-loose"
+                style={{ color: '#ff4444', textShadow: '0 0 8px #ff4444', fontSize: '0.55rem' }}
+              >
+                {loadError}
+              </p>
+            )}
             <Button
               label={loading ? 'LOADING...' : 'BEGIN'}
               color="green"
@@ -189,7 +213,7 @@ function App() {
               onClick={() => setScreen('highScores')}
             />
           </div>
-        </>
+        </div>
       )}
 
       {/* ── PLAYING ───────────────────────────────────────────────── */}
@@ -199,11 +223,27 @@ function App() {
             <p className="font-arcade text-neon-green text-xs">
               QUESTION {currentIndex + 1} OF {questions.length}
             </p>
+            {difficulty === 'easy' && (
+              <p className="font-arcade text-xs"
+                style={{ color: '#00ff88', textShadow: '0 0 8px #00ff88', fontSize: '0.55rem' }}>
+                ● EASY
+              </p>
+            )}
+            {difficulty === 'medium' && (
+              <p className="font-arcade text-xs"
+                style={{ color: '#ffff00', textShadow: '0 0 8px #ffff00', fontSize: '0.55rem' }}>
+                ● MEDIUM
+              </p>
+            )}
+            {difficulty === 'hard' && (
+              <p className="font-arcade text-xs"
+                style={{ color: '#ff00ff', textShadow: '0 0 8px #ff00ff', fontSize: '0.55rem' }}>
+                ● HARD
+              </p>
+            )}
             {isChad && (
-              <p
-                className="font-arcade text-xs animate-flicker"
-                style={{ color: '#ff4444', textShadow: '0 0 8px #ff4444', fontSize: '0.55rem' }}
-              >
+              <p className="font-arcade text-xs animate-flicker"
+                style={{ color: '#ff4444', textShadow: '0 0 8px #ff4444', fontSize: '0.55rem' }}>
                 ☠ CHAD MODE
               </p>
             )}
@@ -233,6 +273,14 @@ function App() {
               onClick={handleNext}
             />
           )}
+
+          {/* Always visible — takes player back to fresh setup */}
+          <Button
+            label="RESTART / QUIT"
+            color="pink"
+            size="sm"
+            onClick={() => setScreen('welcome')}
+          />
         </div>
       )}
 
